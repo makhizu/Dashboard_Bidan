@@ -1,0 +1,64 @@
+# grafik usia ibu KB
+
+        # ambil nik tiap ibu dan tahun kunjungan
+        $tahunLahir = KeluargaBerencana::select(DB::raw("YEAR(tanggal_kunjungan) as tanggalKunjungan,  SUBSTRING(nik, 11, 2) as tahunLahir"))->get();
+
+        # ubah data menjadi 19.. atau 20..
+        foreach ($tahunLahir as $key) {
+            $usia = (int) $key->tahunLahir;
+
+            if ($usia >= 60) {
+                (int) $key->tahunLahir = 19 . $usia;
+            } else {
+                (int) $key->tahunLahir = 20 . $usia;
+            }
+        }
+
+        # ubah tahun string menjadi integer
+        foreach ($tahunLahir as $key => $value) {
+            foreach ($tahunLahir as $key => $value) {
+                $tahunLahir[$key]['tahunLahir'] = intval($value['tahunLahir']);
+                $tahunLahir[$key]['tanggalKunjungan'] = intval($value['tanggalKunjungan']);
+            }
+        }
+
+        // $data = json_decode($tahunLahir, true);
+        # membuat array untuk menampung umur berdasarkan tahun kunjungan dikurangi tahun lahir
+        $ages = collect($tahunLahir)->map(function ($item) {
+            return ['age' => $item['tanggalKunjungan'] - $item['tahunLahir']];
+        });
+
+        // dd($ages, $tahunLahir);
+        #sorting data umur
+        $ages = collect($ages)->sortBy('age')->values()->all();
+
+        #menghapus data yang sama untuk kategori di grafik
+        $labelAges = collect($ages)->unique('age')->values()->all();
+        // return $labelAges;
+
+
+        # menghitung jumlah umur yang sama
+        $ages = collect($ages);
+
+        $cAges = $ages->unique('age')->map(function ($item) use ($ages) {
+            $count = $ages->where('age', $item['age'])->count();
+            return ['age' => $item['age'], 'count' => $count];
+        })->values();
+
+        // return $cAges;
+
+
+
+        // $tahunLahir = collect($tahunLahir)->sortBy('tahunLahir')->values()->all();
+
+        // $tahunLahir = collect($tahunLahir);
+
+        // $counts = $tahunLahir->unique('tahunLahir')->map(function ($item) use ($tahunLahir) {
+        //     $count = $tahunLahir->where('tahunLahir', $item['tahunLahir'])->count();
+        //     return ['tahunLahir' => $item['tahunLahir'], 'count' => $count];
+        // })->values();
+
+        // return $counts;
+
+        // $coba = KeluargaBerencana::where('tanggal_kunjungan', '2022-12-27')->get();
+        // return $coba;
